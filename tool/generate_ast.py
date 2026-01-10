@@ -75,7 +75,7 @@ def main(args):
     define_ast(output_dir, "Expr", {
         "Binary"   : ("left: Expr", "operator: Token", "right: Expr"),
         "Grouping" : ("expression: Expr", ),
-        "Literal"  : ("Value: object", ),
+        "Literal"  : ("value: object", ),
         "Unary"    : ("operator: Token", "right: Expr")
     })
 
