@@ -1,9 +1,10 @@
 from lox.token_type import TokenType
 from lox.token import Token
 
+
 KEYWORDS = {
     "and"    : TokenType.AND,
-    "class"  :  TokenType.CLASS,
+    "class"  : TokenType.CLASS,
     "else"   : TokenType.ELSE,
     "false"  : TokenType.FALSE,
     "for"    : TokenType.FOR,
@@ -19,6 +20,7 @@ KEYWORDS = {
     "var"    : TokenType.VAR,
     "while"  : TokenType.WHILE
 }
+
 
 class Scanner:
     def __init__(self, source, error_handler):
@@ -104,7 +106,6 @@ class Scanner:
         type = KEYWORDS.get(text, TokenType.IDENTIFIER)
         self.add_token(type)
 
-    
     def string(self):
         while self.peek() != '"' and not self.is_at_end():
             if self.peek() == '\n':
