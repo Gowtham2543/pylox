@@ -48,6 +48,3 @@ class TokenType(Enum):
     WHILE = "while"
 
     EOF = "EOF"
-
-
-
