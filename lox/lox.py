@@ -5,10 +5,12 @@ from lox.token import Token
 from lox.token_type import TokenType
 from lox.parser import Parser
 from lox.ast_printer import ASTPrinter
+from lox.interpreter import Interpreter
 
 
 class Lox:
     had_error = False
+    had_runtime_error = False
 
     @staticmethod
     def run_prompt():
@@ -31,7 +33,8 @@ class Lox:
         if Lox.had_error:
             return
 
-        print(ASTPrinter().print(expression))
+        interpreter = Interpreter(Lox.runtime_error)
+        interpreter.interpret(expression)
     
     @staticmethod
     def run_file(path):
@@ -40,6 +43,9 @@ class Lox:
 
         if Lox.had_error:
             exit(65)
+        
+        if Lox.had_runtime_error:
+            exit(70)
 
     @staticmethod
     def line_error(line, message):
@@ -56,3 +62,8 @@ class Lox:
     def report(line, where, message):
         print(f'[line {line}] Error {where} : {message}' )
         Lox.had_error = True
+    
+    @staticmethod
+    def runtime_error(error):
+        print(f"{str(error)}\n[line {error.token.line}]")
+        Lox.had_runtime_error = True
