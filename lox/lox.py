@@ -1,6 +1,11 @@
 from pathlib import Path
 
 from lox.scanner import Scanner
+from lox.token import Token
+from lox.token_type import TokenType
+from lox.parser import Parser
+from lox.ast_printer import ASTPrinter
+
 
 class Lox:
     had_error = False
@@ -18,11 +23,15 @@ class Lox:
 
     @staticmethod
     def run(source):
-        scanner = Scanner(source, Lox.error)
+        scanner = Scanner(source, Lox.line_error)
         tokens = scanner.scan_tokens()
+        parser = Parser(tokens, Lox.token_error)
+        expression = parser.parse()
 
-        for token in tokens:
-            print(token)
+        if Lox.had_error:
+            return
+
+        print(ASTPrinter().print(expression))
     
     @staticmethod
     def run_file(path):
@@ -33,8 +42,15 @@ class Lox:
             exit(65)
 
     @staticmethod
-    def error(line, message):
+    def line_error(line, message):
         Lox.report(line, "", message)
+
+    @staticmethod
+    def token_error(token: Token, message: str):
+        if token.token_type == TokenType.EOF:
+            Lox.report(token.line, " at the end", message)
+        else:
+            Lox.report(token.line, f"at '{token.lexeme}'", message)
 
     @staticmethod
     def report(line, where, message):
