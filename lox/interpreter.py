@@ -116,7 +116,7 @@ class Interpreter(exprVisitor):
             text = str(object)
 
             if text[-2:] == ".0":
-                text = text[len(text) - 2]
+                text = text[:len(text) - 2]
         
             return text
         
