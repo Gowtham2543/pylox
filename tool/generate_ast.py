@@ -1,17 +1,30 @@
 #!/usr/bin/env python3
 
-from sys import argv
 import os
+from sys import argv
+from typing import Tuple
 
 
 INDENTATION = "    "
+
+DEFAULT_IMPORTS = ("from __future__ import annotations\n", 
+                   "from abc import ABC, abstractmethod", )
+
+
+EXPRESSION_IMPORTS = DEFAULT_IMPORTS + (
+    "from lox.token import Token",
+)
+
+STATEMENTS_IMPORTS = DEFAULT_IMPORTS + (
+    "from lox.Expr import Expr",
+)
 
 
 def define_type(file, base_name, class_name, fields):
     file.write(f"class {class_name}({base_name}):")
     file.write('\n')
 
-    file.write(f"{INDENTATION}def __init__(self, {", ".join(fields)}):")
+    file.write(f"{INDENTATION}def __init__(self, {', '.join(fields)}):")
     file.write('\n')
 
     for field in fields:
@@ -37,17 +50,17 @@ def define_visitor(file, base_name: str, expr_types: dict):
         file.write('\n')
         file.write(f'{INDENTATION * 2}pass')
         file.write('\n')
+    
+
+def define_imports(file, imports):
+    file.write('\n'.join(imports))
 
 
-def define_ast(output_dir: str, base_name: str, expr_types: dict):
+def define_ast(output_dir: str, base_name: str, expr_types: dict, imports: Tuple[str, ...]):
     path = os.path.join(output_dir, f"{base_name}.py")
 
     with open(path, mode='w') as file:
-        file.write("from __future__ import annotations")
-        file.write('\n\n')
-        file.write("from abc import ABC, abstractmethod")
-        file.write('\n')
-        file.write("from lox.token import Token")
+        define_imports(file, imports)
         file.write('\n\n\n')
         define_visitor(file, base_name, expr_types)
         file.write('\n\n')
@@ -77,7 +90,14 @@ def main(args):
         "Grouping" : ("expression: Expr", ),
         "Literal"  : ("value: object", ),
         "Unary"    : ("operator: Token", "right: Expr")
-    })
+    },
+    EXPRESSION_IMPORTS)
+
+    define_ast(output_dir, "Stmt", {
+        "Expression" : ("expression: Expr", ),
+        "Print"      : ("expresssion: Expr", )
+    },
+    STATEMENTS_IMPORTS)
 
 
 if __name__ == "__main__":
