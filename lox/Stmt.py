@@ -27,8 +27,8 @@ class Expression(Stmt):
         return visitor.visit_expression_stmt(self)
 
 class Print(Stmt):
-    def __init__(self, expresssion: Expr):
-        self.expresssion = expresssion
+    def __init__(self, expression: Expr):
+        self.expression = expression
 
     def accept(self, visitor: stmtVisitor):
         return visitor.visit_print_stmt(self)

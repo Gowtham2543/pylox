@@ -95,7 +95,7 @@ def main(args):
 
     define_ast(output_dir, "Stmt", {
         "Expression" : ("expression: Expr", ),
-        "Print"      : ("expresssion: Expr", )
+        "Print"      : ("expression: Expr", )
     },
     STATEMENTS_IMPORTS)
 

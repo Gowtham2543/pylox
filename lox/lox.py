@@ -28,13 +28,13 @@ class Lox:
         scanner = Scanner(source, Lox.line_error)
         tokens = scanner.scan_tokens()
         parser = Parser(tokens, Lox.token_error)
-        expression = parser.parse()
+        statements = parser.parse()
 
         if Lox.had_error:
             return
 
         interpreter = Interpreter(Lox.runtime_error)
-        interpreter.interpret(expression)
+        interpreter.interpret(statements)
     
     @staticmethod
     def run_file(path):

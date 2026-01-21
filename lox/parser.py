@@ -1,6 +1,9 @@
+from typing import List
+
 from lox.token import Token
 from lox.token_type import TokenType
 from lox.Expr import Binary, Unary, Literal, Grouping
+from lox.Stmt import Print, Expression
 
 
 class ParserExcpetion(Exception):
@@ -16,20 +19,38 @@ class Parser:
     # unary → ( "!" | "-" ) unary | primary ;
     # primary → NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" ;
 
-    def __init__(self, tokens: Token, error_handler):
+    def __init__(self, tokens: List[Token], error_handler):
         self.tokens = tokens
         self.error_handler = error_handler
         self.current = 0
     
     def parse(self):
-        try:
-            return self.expression()
-        except ParserExcpetion:
-            return None
+        statements = []
+
+        while not self.is_at_end():
+            statements.append(self.statement())
+        
+        return statements
     
     def expression(self):
         return self.equality()
     
+    def statement(self):
+        if self.match(TokenType.PRINT):
+            return self.print_statements()
+        
+        return self.expression_statements()
+    
+    def print_statements(self):
+        value = self.expression()
+        self.consume(TokenType.SEMICOLON, "Expect ';' after value")
+        return Print(value)
+
+    def expression_statements(self):
+        expr = self.expression()
+        self.consume(TokenType.SEMICOLON, "Expect ';' after expression")
+        return Expression(expr)
+
     # equality -> comparison ( ("!=" | "==" ) comparison)*
     def equality(self):
         expr = self.comparison()

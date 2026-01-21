@@ -1,4 +1,5 @@
 from lox.Expr import exprVisitor
+from lox.Stmt import Stmt, stmtVisitor
 from lox.token import TokenType
 
 
@@ -8,18 +9,32 @@ class RuntimeException(Exception):
         super().__init__(f"{message}")
 
 
-class Interpreter(exprVisitor):
+class Interpreter(exprVisitor, stmtVisitor):
 
     def __init__(self, error_handler):
         self.error_handler = error_handler
 
-    def evaluate(self,expr):
+    def evaluate(self, expr):
         return expr.accept(self)
     
-    def interpret(self, expressions):
+    def execute(self, statement):
+        statement.accept(self)
+    
+    def visit_expression_stmt(self, expr):
+        # FIXME: The expr variable is of type statement. I don't know
+        # why generate_ast.py generates it as expr
+        self.evaluate(expr.expression)
+
+    def visit_print_stmt(self, expr):
+        # FIXME: The expr variable is of type statement. I don't know
+        # why generate_ast.py generates it as expr
+        value = self.evaluate(expr.expression)
+        print(value)
+    
+    def interpret(self, statements):
         try:
-            val = self.evaluate(expressions)
-            print(self.stringify(val))
+            for statement in statements:
+                self.execute(statement)
         except RuntimeException as exc:
             self.error_handler(exc)
 
