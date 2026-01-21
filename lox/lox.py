@@ -29,6 +29,7 @@ class Lox:
                 break
         
             Lox.run(line)
+            Lox.had_error = False
 
     @staticmethod
     def run(source):
