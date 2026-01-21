@@ -16,6 +16,7 @@ EXPRESSION_IMPORTS = DEFAULT_IMPORTS + (
 )
 
 STATEMENTS_IMPORTS = DEFAULT_IMPORTS + (
+    "from lox.token import Token",
     "from lox.Expr import Expr",
 )
 
@@ -89,13 +90,15 @@ def main(args):
         "Binary"   : ("left: Expr", "operator: Token", "right: Expr"),
         "Grouping" : ("expression: Expr", ),
         "Literal"  : ("value: object", ),
-        "Unary"    : ("operator: Token", "right: Expr")
+        "Unary"    : ("operator: Token", "right: Expr"),
+        "Variable" : ("name: Token", )
     },
     EXPRESSION_IMPORTS)
 
     define_ast(output_dir, "Stmt", {
         "Expression" : ("expression: Expr", ),
-        "Print"      : ("expression: Expr", )
+        "Print"      : ("expression: Expr", ),
+        "Var"        : ("name: Token", "initializer: Expr")
     },
     STATEMENTS_IMPORTS)
 

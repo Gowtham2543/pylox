@@ -11,6 +11,13 @@ from lox.interpreter import Interpreter
 class Lox:
     had_error = False
     had_runtime_error = False
+    interpreter = None
+
+    @classmethod
+    def get_interpreter(cls):
+        if cls.interpreter is None:
+            cls.interpreter = Interpreter(cls.runtime_error)
+        return cls.interpreter
 
     @staticmethod
     def run_prompt():
@@ -33,7 +40,10 @@ class Lox:
         if Lox.had_error:
             return
 
-        interpreter = Interpreter(Lox.runtime_error)
+        # In a REPL every time the interpreter object will be intialized, deleting the environment,
+        # which is wrong
+        # interpreter = Interpreter(Lox.runtime_error)
+        interpreter = Lox.get_interpreter()
         interpreter.interpret(statements)
     
     @staticmethod

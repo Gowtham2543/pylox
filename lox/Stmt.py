@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from lox.token import Token
 from lox.Expr import Expr
 
 
@@ -11,6 +12,10 @@ class stmtVisitor(ABC):
 
     @abstractmethod
     def visit_print_stmt(self, expr: Stmt):
+        pass
+
+    @abstractmethod
+    def visit_var_stmt(self, expr: Stmt):
         pass
 
 
@@ -32,4 +37,12 @@ class Print(Stmt):
 
     def accept(self, visitor: stmtVisitor):
         return visitor.visit_print_stmt(self)
+
+class Var(Stmt):
+    def __init__(self, name: Token, initializer: Expr):
+        self.name = name
+        self.initializer = initializer
+
+    def accept(self, visitor: stmtVisitor):
+        return visitor.visit_var_stmt(self)
 

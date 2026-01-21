@@ -1,18 +1,14 @@
 from lox.Expr import exprVisitor
 from lox.Stmt import Stmt, stmtVisitor
 from lox.token import TokenType
-
-
-class RuntimeException(Exception):
-    def __init__(self, token, message):
-        self.token = token
-        super().__init__(f"{message}")
-
+from lox.environment import Environment
+from lox.exception import RuntimeException
 
 class Interpreter(exprVisitor, stmtVisitor):
 
     def __init__(self, error_handler):
         self.error_handler = error_handler
+        self.environment   = Environment()
 
     def evaluate(self, expr):
         return expr.accept(self)
@@ -31,6 +27,15 @@ class Interpreter(exprVisitor, stmtVisitor):
         value = self.evaluate(expr.expression)
         print(value)
     
+    def visit_var_stmt(self, expr):
+        # FIXME: The expr variable is of type statement. I don't know
+        # why generate_ast.py generates it as expr
+        value = None
+        if expr.initializer is not None:
+            value = self.evaluate(expr.initializer)
+        
+        self.environment.define(expr.name.lexeme, value)
+
     def interpret(self, statements):
         try:
             for statement in statements:
@@ -92,6 +97,9 @@ class Interpreter(exprVisitor, stmtVisitor):
             case TokenType.MINUS:
                 self.check_number_operand(expr.operator, right)
                 return -float(right)
+    
+    def visit_variable_expr(self, expr):
+        return self.environment.get(expr.name)
     
     def check_number_operand(self, operator, operand):
         if isinstance(operand, float):
