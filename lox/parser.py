@@ -2,7 +2,7 @@ from typing import List
 
 from lox.token import Token
 from lox.token_type import TokenType
-from lox.Expr import Binary, Unary, Literal, Grouping, Variable
+from lox.Expr import Binary, Unary, Literal, Grouping, Variable, Assign
 from lox.Stmt import Print, Expression, Var
 
 
@@ -11,7 +11,8 @@ class ParserException(Exception):
 
 class Parser:
 
-    # expression → equality ;
+    # expression → assigment ;
+    # assignment → IDENTIFIER "=" assignment | equality ;
     # equality → comparison ( ( "!=" | "==" ) comparison )* ;
     # comparison → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
     # term → factor ( ( "-" | "+" ) factor )* ;
@@ -42,7 +43,7 @@ class Parser:
         return statements
     
     def expression(self):
-        return self.equality()
+        return self.assignment()
 
     def declaration(self):
         try:
@@ -77,6 +78,20 @@ class Parser:
         expr = self.expression()
         self.consume(TokenType.SEMICOLON, "Expect ';' after expression")
         return Expression(expr)
+    
+    def assignment(self):
+        expr = self.equality()
+        if self.match(TokenType.EQUAL):
+            equals = self.previous()
+            value = self.assignment()
+
+            if isinstance(expr, Variable):
+                name = expr.name
+                return Assign(name, value)
+
+            self.error(equals, "Invalid assignment target.")
+
+        return expr
 
     # equality -> comparison ( ("!=" | "==" ) comparison)*
     def equality(self):
