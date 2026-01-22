@@ -85,7 +85,7 @@ class Interpreter(exprVisitor, stmtVisitor):
             case TokenType.BANG_EQUAL:
                 return not self.is_equal(left, right)
             case TokenType.EQUAL_EQUAL:
-                return not self.is_equal(left, right)
+                return self.is_equal(left, right)
     
     def visit_literal_expr(self, expr):
         return expr.value
