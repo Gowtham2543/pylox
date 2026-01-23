@@ -31,6 +31,12 @@ class Interpreter(exprVisitor, stmtVisitor):
     
     def visit_expression_stmt(self, stmt):
         self.evaluate(stmt.expression)
+    
+    def visit_if_stmt(self, stmt):
+        if self.is_truthy(self.evaluate(stmt.condition)):
+            self.execute(stmt.then_branch)
+        elif stmt.else_branch:
+            self.execute(stmt.else_branch)
 
     def visit_print_stmt(self, stmt):
         value = self.evaluate(stmt.expression)

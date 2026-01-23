@@ -3,7 +3,7 @@ from typing import List
 from lox.token import Token
 from lox.token_type import TokenType
 from lox.Expr import Binary, Unary, Literal, Grouping, Variable, Assign
-from lox.Stmt import Print, Expression, Var, Block
+from lox.Stmt import Print, Expression, Var, Block, If
 
 
 class ParserException(Exception):
@@ -25,7 +25,8 @@ class Parser:
     # declaration → varDecl | statement ;
     # varDecl → "var" IDENTIFIER ( "=" expression )? ";" ;
 
-    # statement → exprStmt | printStmt | block;
+    # statement → exprStmt | ifStmt | printStmt | block;
+    # ifStmt → "if" "(" expression ")" statement ( "else" statement )?;
     # block → "{" declaration "}"
     # exprStmt → expression ";" ;
     # printStmt → "print" expression ";" ;
@@ -55,6 +56,8 @@ class Parser:
             self.synchronize()
     
     def statement(self):
+        if self.match(TokenType.IF):
+            return self.if_statement()
         if self.match(TokenType.PRINT):
             return self.print_statements()
 
@@ -62,6 +65,19 @@ class Parser:
             return Block(self.block())
         
         return self.expression_statements()
+
+    def if_statement(self):
+        self.consume(TokenType.LEFT_PAREN, "Expect '(' after 'if'.")
+        condition = self.expression()
+        self.consume(TokenType.RIGHT_PAREN, "Expect ')' after 'if'.")
+
+        then_branch = self.statement()
+        else_branch = None
+
+        if self.match(TokenType.ELSE):
+            else_branch = self.statement()
+        
+        return If(condition, then_branch, else_branch)
     
     def print_statements(self):
         value = self.expression()

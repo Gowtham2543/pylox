@@ -100,6 +100,7 @@ def main(args):
     define_ast(output_dir, "Stmt", {
         "Block"      : ("statements: List[Stmt]", ),
         "Expression" : ("expression: Expr", ),
+        "If"         : ("condition: Expr", "then_branch: Stmt", "else_branch: Stmt"),
         "Print"      : ("expression: Expr", ),
         "Var"        : ("name: Token", "initializer: Expr")
     },
