@@ -96,7 +96,7 @@ class Scanner:
                 elif self.is_alpha(char):
                     self.identifier()
                 else:
-                    self.error_handler(self.line, "Unexpected Chanracer.")
+                    self.error_handler(self.line, "Unexpected Character.")
     
     def identifier(self):
         while self.is_alpha_numeric(self.peek()):

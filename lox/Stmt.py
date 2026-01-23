@@ -1,21 +1,27 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from typing import List
+
 from lox.token import Token
 from lox.Expr import Expr
 
 
 class stmtVisitor(ABC):
     @abstractmethod
-    def visit_expression_stmt(self, expr: Stmt):
+    def visit_block_stmt(self, stmt: Block):
         pass
 
     @abstractmethod
-    def visit_print_stmt(self, expr: Stmt):
+    def visit_expression_stmt(self, stmt: Expression):
         pass
 
     @abstractmethod
-    def visit_var_stmt(self, expr: Stmt):
+    def visit_print_stmt(self, stmt: Print):
+        pass
+
+    @abstractmethod
+    def visit_var_stmt(self, stmt: Var):
         pass
 
 
@@ -23,6 +29,13 @@ class Stmt(ABC):
     @abstractmethod
     def accept(self, visitor: stmtVisitor):
         pass
+
+class Block(Stmt):
+    def __init__(self, statements: List[Stmt]):
+        self.statements = statements
+
+    def accept(self, visitor: stmtVisitor):
+        return visitor.visit_block_stmt(self)
 
 class Expression(Stmt):
     def __init__(self, expression: Expr):

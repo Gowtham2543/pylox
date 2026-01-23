@@ -16,6 +16,7 @@ EXPRESSION_IMPORTS = DEFAULT_IMPORTS + (
 )
 
 STATEMENTS_IMPORTS = DEFAULT_IMPORTS + (
+    "from typing import List\n",
     "from lox.token import Token",
     "from lox.Expr import Expr",
 )
@@ -47,7 +48,7 @@ def define_visitor(file, base_name: str, expr_types: dict):
         file.write('\n')
         file.write(f"{INDENTATION}@abstractmethod")
         file.write('\n')
-        file.write(f"{INDENTATION}def visit_{type.lower()}_{base_name.lower()}(self, expr: {base_name}):")
+        file.write(f"{INDENTATION}def visit_{type.lower()}_{base_name.lower()}(self, {base_name.lower()}: {type}):")
         file.write('\n')
         file.write(f'{INDENTATION * 2}pass')
         file.write('\n')
@@ -97,6 +98,7 @@ def main(args):
     EXPRESSION_IMPORTS)
 
     define_ast(output_dir, "Stmt", {
+        "Block"      : ("statements: List[Stmt]", ),
         "Expression" : ("expression: Expr", ),
         "Print"      : ("expression: Expr", ),
         "Var"        : ("name: Token", "initializer: Expr")

@@ -3,7 +3,7 @@ from typing import List
 from lox.token import Token
 from lox.token_type import TokenType
 from lox.Expr import Binary, Unary, Literal, Grouping, Variable, Assign
-from lox.Stmt import Print, Expression, Var
+from lox.Stmt import Print, Expression, Var, Block
 
 
 class ParserException(Exception):
@@ -25,7 +25,8 @@ class Parser:
     # declaration → varDecl | statement ;
     # varDecl → "var" IDENTIFIER ( "=" expression )? ";" ;
 
-    # statement → exprStmt| printStmt ;
+    # statement → exprStmt | printStmt | block;
+    # block → "{" declaration "}"
     # exprStmt → expression ";" ;
     # printStmt → "print" expression ";" ;
 
@@ -56,6 +57,9 @@ class Parser:
     def statement(self):
         if self.match(TokenType.PRINT):
             return self.print_statements()
+
+        if self.match(TokenType.LEFT_BRACE):
+            return Block(self.block())
         
         return self.expression_statements()
     
@@ -78,6 +82,15 @@ class Parser:
         expr = self.expression()
         self.consume(TokenType.SEMICOLON, "Expect ';' after expression")
         return Expression(expr)
+
+    def block(self):
+        statements = []
+
+        while not self.check(TokenType.RIGHT_BRACE) and not self.is_at_end():
+            statements.append(self.declaration())
+        
+        self.consume(TokenType.RIGHT_BRACE, "Expect '}' after block.")
+        return statements
     
     def assignment(self):
         expr = self.equality()

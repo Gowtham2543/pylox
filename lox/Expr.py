@@ -6,27 +6,27 @@ from lox.token import Token
 
 class exprVisitor(ABC):
     @abstractmethod
-    def visit_assign_expr(self, expr: Expr):
+    def visit_assign_expr(self, expr: Assign):
         pass
 
     @abstractmethod
-    def visit_binary_expr(self, expr: Expr):
+    def visit_binary_expr(self, expr: Binary):
         pass
 
     @abstractmethod
-    def visit_grouping_expr(self, expr: Expr):
+    def visit_grouping_expr(self, expr: Grouping):
         pass
 
     @abstractmethod
-    def visit_literal_expr(self, expr: Expr):
+    def visit_literal_expr(self, expr: Literal):
         pass
 
     @abstractmethod
-    def visit_unary_expr(self, expr: Expr):
+    def visit_unary_expr(self, expr: Unary):
         pass
 
     @abstractmethod
-    def visit_variable_expr(self, expr: Expr):
+    def visit_variable_expr(self, expr: Variable):
         pass
 
 

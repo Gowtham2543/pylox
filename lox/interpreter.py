@@ -16,25 +16,32 @@ class Interpreter(exprVisitor, stmtVisitor):
     def execute(self, statement):
         statement.accept(self)
     
-    def visit_expression_stmt(self, expr):
-        # FIXME: The expr variable is of type statement. I don't know
-        # why generate_ast.py generates it as expr
-        self.evaluate(expr.expression)
+    def execute_block(self, statements, environment):
+        previous = self.environment
+        try:
+            self.environment = environment
 
-    def visit_print_stmt(self, expr):
-        # FIXME: The expr variable is of type statement. I don't know
-        # why generate_ast.py generates it as expr
-        value = self.evaluate(expr.expression)
+            for statement in statements:
+                self.execute(statement)
+        finally:
+            self.environment = previous
+    
+    def visit_block_stmt(self, stmt):
+        self.execute_block(stmt.statements, Environment(self.environment))
+    
+    def visit_expression_stmt(self, stmt):
+        self.evaluate(stmt.expression)
+
+    def visit_print_stmt(self, stmt):
+        value = self.evaluate(stmt.expression)
         print(value)
     
-    def visit_var_stmt(self, expr):
-        # FIXME: The expr variable is of type statement. I don't know
-        # why generate_ast.py generates it as expr
+    def visit_var_stmt(self, stmt):
         value = None
-        if expr.initializer is not None:
-            value = self.evaluate(expr.initializer)
+        if stmt.initializer is not None:
+            value = self.evaluate(stmt.initializer)
         
-        self.environment.define(expr.name.lexeme, value)
+        self.environment.define(stmt.name.lexeme, value)
     
     def visit_assign_expr(self, expr):
         value = self.evaluate(expr.value)
