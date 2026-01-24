@@ -27,7 +27,8 @@ class Parser:
     # declaration → varDecl | statement ;
     # varDecl → "var" IDENTIFIER ( "=" expression )? ";" ;
 
-    # statement → exprStmt | ifStmt | printStmt | whileStmt | block;
+    # statement → exprStmt | forStmt | ifStmt | printStmt | whileStmt | block;
+    # forStmt → "for" "(" (varDecl | exprStmt | ";") expression? ";" expression? ")" statement;    
     # ifStmt → "if" "(" expression ")" statement ( "else" statement )?;
     # whileStmt → "while" "(" expression ")" statement; 
     # block → "{" declaration "}"
@@ -59,6 +60,8 @@ class Parser:
             self.synchronize()
     
     def statement(self):
+        if self.match(TokenType.FOR):
+            return self.for_statement()
         if self.match(TokenType.IF):
             return self.if_statement()
         if self.match(TokenType.PRINT):
@@ -69,6 +72,48 @@ class Parser:
             return Block(self.block())
         
         return self.expression_statements()
+    
+    def for_statement(self):
+        # This is just sugarized version of while loop
+        self.consume(TokenType.LEFT_PAREN, "Expect '(' after 'for'.")
+
+        initializer = None
+        if self.match(TokenType.SEMICOLON):
+            # I think this is a bad code
+            pass
+        elif self.match(TokenType.VAR):
+            initializer = self.var_declaration()
+        else:
+            initializer = self.expression_statements()
+        
+        condition = None
+        if not self.check(TokenType.SEMICOLON):
+            condition = self.expression()
+        
+        self.consume(TokenType.SEMICOLON, "Expect ';' after loop condition.")
+
+        increment = None
+        if not self.check(TokenType.RIGHT_PAREN):
+            increment = self.expression()
+        
+        self.consume(TokenType.RIGHT_PAREN, "Expect ')' after for clauses.")
+
+        body = self.statement()
+
+        # If there is condition, add the increment statement after the body
+        if increment:
+            body = Block([body, Expression(increment)])
+
+        # No condition. Do infinite loop
+        if not condition:
+            condition = Literal(True)
+        body = While(condition, body)
+
+        # Add the initializer to the top of the body
+        if initializer:
+            body = Block([initializer, body])
+
+        return body
 
     def if_statement(self):
         self.consume(TokenType.LEFT_PAREN, "Expect '(' after 'if'.")
