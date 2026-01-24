@@ -103,7 +103,8 @@ def main(args):
         "Expression" : ("expression: Expr", ),
         "If"         : ("condition: Expr", "then_branch: Stmt", "else_branch: Stmt"),
         "Print"      : ("expression: Expr", ),
-        "Var"        : ("name: Token", "initializer: Expr")
+        "Var"        : ("name: Token", "initializer: Expr"),
+        "While"      : ("condition: Expr", "body: Stmt")
     },
     STATEMENTS_IMPORTS)
 

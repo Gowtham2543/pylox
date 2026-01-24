@@ -3,7 +3,7 @@ from typing import List
 from lox.token import Token
 from lox.token_type import TokenType
 from lox.Expr import Binary, Unary, Literal, Grouping, Variable, Assign, Logical
-from lox.Stmt import Print, Expression, Var, Block, If
+from lox.Stmt import Print, Expression, Var, Block, If, While
 
 
 class ParserException(Exception):
@@ -27,8 +27,9 @@ class Parser:
     # declaration → varDecl | statement ;
     # varDecl → "var" IDENTIFIER ( "=" expression )? ";" ;
 
-    # statement → exprStmt | ifStmt | printStmt | block;
+    # statement → exprStmt | ifStmt | printStmt | whileStmt | block;
     # ifStmt → "if" "(" expression ")" statement ( "else" statement )?;
+    # whileStmt → "while" "(" expression ")" statement; 
     # block → "{" declaration "}"
     # exprStmt → expression ";" ;
     # printStmt → "print" expression ";" ;
@@ -62,7 +63,8 @@ class Parser:
             return self.if_statement()
         if self.match(TokenType.PRINT):
             return self.print_statements()
-
+        if self.match(TokenType.WHILE):
+            return self.while_statement()
         if self.match(TokenType.LEFT_BRACE):
             return Block(self.block())
         
@@ -95,6 +97,14 @@ class Parser:
         
         self.consume(TokenType.SEMICOLON, "Expect ';' after variable declaration.")
         return Var(name, initializer)
+
+    def while_statement(self):
+        self.consume(TokenType.LEFT_PAREN, "Expect '(' after while.")
+        condition = self.expression()
+        self.consume(TokenType.RIGHT_PAREN, "Expect ')' after condition")
+        body = self.statement()
+
+        return While(condition, body)
 
     def expression_statements(self):
         expr = self.expression()
