@@ -40,7 +40,7 @@ class Interpreter(exprVisitor, stmtVisitor):
 
     def visit_print_stmt(self, stmt):
         value = self.evaluate(stmt.expression)
-        print(value)
+        print(self.stringify(value))
     
     def visit_var_stmt(self, stmt):
         value = None
@@ -102,6 +102,18 @@ class Interpreter(exprVisitor, stmtVisitor):
     
     def visit_literal_expr(self, expr):
         return expr.value
+
+    def visit_logical_expr(self, expr):
+        left = self.evaluate(expr.left)
+
+        if expr.operator.token_type == TokenType.OR:
+            if self.is_truthy(left):
+                return left
+        else:
+            if not self.is_truthy(left):
+                return left
+        
+        return self.evaluate(expr.right)
     
     def visit_grouping_expr(self, expr):
         return self.evaluate(expr.expression)

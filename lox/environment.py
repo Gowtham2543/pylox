@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from lox.token import Token
 from lox.exception import RuntimeException
 

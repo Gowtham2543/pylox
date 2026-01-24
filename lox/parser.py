@@ -2,7 +2,7 @@ from typing import List
 
 from lox.token import Token
 from lox.token_type import TokenType
-from lox.Expr import Binary, Unary, Literal, Grouping, Variable, Assign
+from lox.Expr import Binary, Unary, Literal, Grouping, Variable, Assign, Logical
 from lox.Stmt import Print, Expression, Var, Block, If
 
 
@@ -12,7 +12,9 @@ class ParserException(Exception):
 class Parser:
 
     # expression → assigment ;
-    # assignment → IDENTIFIER "=" assignment | equality ;
+    # assignment → IDENTIFIER "=" assignment | logic_or ;
+    # logic_or → logic_and ( "or" logic_and)*;
+    # logic_and → equality ( "and" equality)*;
     # equality → comparison ( ( "!=" | "==" ) comparison )* ;
     # comparison → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
     # term → factor ( ( "-" | "+" ) factor )* ;
@@ -109,7 +111,8 @@ class Parser:
         return statements
     
     def assignment(self):
-        expr = self.equality()
+        expr = self.logical_or()
+
         if self.match(TokenType.EQUAL):
             equals = self.previous()
             value = self.assignment()
@@ -120,6 +123,26 @@ class Parser:
 
             self.error(equals, "Invalid assignment target.")
 
+        return expr
+    
+    def logical_or(self):
+        expr = self.logical_and()
+
+        while self.match(TokenType.OR):
+            operator = self.previous()
+            right = self.logical_and()
+            expr = Logical(expr, operator, right)
+        
+        return expr
+    
+    def logical_and(self):
+        expr = self.equality()
+
+        while self.match(TokenType.AND):
+            operator = self.previous()
+            right = self.equality()
+            expr = Logical(expr, operator, right)
+        
         return expr
 
     # equality -> comparison ( ("!=" | "==" ) comparison)*
