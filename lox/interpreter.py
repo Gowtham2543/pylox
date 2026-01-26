@@ -17,10 +17,10 @@ class Interpreter(exprVisitor, stmtVisitor):
 
         # Create a concrete LoxCallable class for clock
         class _(LoxCallable):
-            def arity():
+            def arity(self):
                 return 0
             
-            def call(interpreter, arguments):
+            def call(self, interpreter, arguments):
                 return time.time()
             
             def __str__(self):

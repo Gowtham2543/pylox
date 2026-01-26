@@ -1,8 +1,8 @@
 from abc import ABC
 
 class LoxCallable(ABC):
-    def call(interpreter, arguments):
+    def call(self, interpreter, arguments):
         pass
 
-    def arity():
+    def arity(self):
         pass
