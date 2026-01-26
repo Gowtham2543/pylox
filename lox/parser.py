@@ -2,8 +2,8 @@ from typing import List
 
 from lox.token import Token
 from lox.token_type import TokenType
-from lox.Expr import Binary, Unary, Literal, Grouping, Variable, Assign, Logical
-from lox.Stmt import Print, Expression, Var, Block, If, While
+from lox.Expr import Binary, Unary, Literal, Grouping, Variable, Assign, Logical, Call
+from lox.Stmt import Print, Expression, Var, Block, If, While, Function
 
 
 class ParserException(Exception):
@@ -19,14 +19,17 @@ class Parser:
     # comparison → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
     # term → factor ( ( "-" | "+" ) factor )* ;
     # factor → unary ( ( "/" | "*" ) unary )* ;
-    # unary → ( "!" | "-" ) unary | primary ;
+    # unary → ( "!" | "-" ) unary | call ;
+    # call → primary ( "(" arguments? ")" )*;
+    # arguments → expression ( "," expression )*;
     # primary → NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" | IDENTIFIER;
 
     # program → declaration* EOF ;
 
-    # declaration → varDecl | statement ;
-    # varDecl → "var" IDENTIFIER ( "=" expression )? ";" ;
-
+    # declaration → funDecl | varDecl | statement ;
+    # funDecl → "fun" function;
+    # function → IDENTIFIER "(" parameters? ")" block;
+    # varDecl → "var" IDENTIFIER ( "=" expression )? ";";
     # statement → exprStmt | forStmt | ifStmt | printStmt | whileStmt | block;
     # forStmt → "for" "(" (varDecl | exprStmt | ";") expression? ";" expression? ")" statement;    
     # ifStmt → "if" "(" expression ")" statement ( "else" statement )?;
@@ -53,6 +56,8 @@ class Parser:
 
     def declaration(self):
         try:
+            if self.match(TokenType.FUN):
+                return self.function("function")
             if self.match(TokenType.VAR):
                 return self.var_declaration()
             return self.statement()
@@ -156,6 +161,24 @@ class Parser:
         self.consume(TokenType.SEMICOLON, "Expect ';' after expression")
         return Expression(expr)
 
+    def function(self, kind):
+        name = self.consume(TokenType.IDENTIFIER, f"Expect {kind} name.")
+
+        self.consume(TokenType.LEFT_PAREN, f"Expect '(' after {kind} name.")
+
+        parameters = []
+
+        if not self.check(TokenType.RIGHT_PAREN):
+            parameters.append(self.consume(TokenType.IDENTIFIER, "Expect parameter name."))
+            while self.match(TokenType.COMMA):
+                parameters.append(self.consume(TokenType.IDENTIFIER, "Expect parameter name."))
+
+        self.consume(TokenType.RIGHT_PAREN, "Expect ')' after parameters.")
+        self.consume(TokenType.LEFT_BRACE, "Expect '{' before {kind} body.")
+
+        body = self.block()
+        return Function(name, parameters, body)
+
     def block(self):
         statements = []
 
@@ -251,7 +274,31 @@ class Parser:
             right = self.unary()
             return Unary(operator, right)
         
-        return self.primary()
+        return self.call()
+    
+    def finish_call(self, callee):
+        arguments = []
+
+        if not self.check(TokenType.RIGHT_PAREN):
+            arguments.append(self.expression())
+
+            while self.match(TokenType.COMMA):
+                arguments.append(self.expression())
+        
+        paren = self.consume(TokenType.RIGHT_PAREN, "Expect ')' after arguments.")
+
+        return Call(callee, paren, arguments)
+    
+    def call(self):
+        expr = self.primary()
+
+        while True:
+            if self.match(TokenType.LEFT_PAREN):
+                expr = self.finish_call(expr)
+            else:
+                break
+        
+        return expr
 
     # primary → NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" | IDENTIFIER
     def primary(self):

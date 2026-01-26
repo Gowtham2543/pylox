@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from typing import List
+
 from lox.token import Token
 
 
@@ -11,6 +13,10 @@ class exprVisitor(ABC):
 
     @abstractmethod
     def visit_binary_expr(self, expr: Binary):
+        pass
+
+    @abstractmethod
+    def visit_call_expr(self, expr: Call):
         pass
 
     @abstractmethod
@@ -55,6 +61,15 @@ class Binary(Expr):
 
     def accept(self, visitor: exprVisitor):
         return visitor.visit_binary_expr(self)
+
+class Call(Expr):
+    def __init__(self, callee: Expr, paren: Token, arguments: List[Expr]):
+        self.callee = callee
+        self.paren = paren
+        self.arguments = arguments
+
+    def accept(self, visitor: exprVisitor):
+        return visitor.visit_call_expr(self)
 
 class Grouping(Expr):
     def __init__(self, expression: Expr):

@@ -7,16 +7,16 @@ from typing import Tuple
 
 INDENTATION = "    "
 
-DEFAULT_IMPORTS = ("from __future__ import annotations\n", 
-                   "from abc import ABC, abstractmethod", )
+COMMON_IMPORTS = ("from __future__ import annotations\n", 
+                   "from abc import ABC, abstractmethod", 
+                   "from typing import List\n")
 
 
-EXPRESSION_IMPORTS = DEFAULT_IMPORTS + (
+EXPRESSION_IMPORTS = COMMON_IMPORTS + (
     "from lox.token import Token",
 )
 
-STATEMENTS_IMPORTS = DEFAULT_IMPORTS + (
-    "from typing import List\n",
+STATEMENTS_IMPORTS = COMMON_IMPORTS + (
     "from lox.token import Token",
     "from lox.Expr import Expr",
 )
@@ -90,6 +90,7 @@ def main(args):
     define_ast(output_dir, "Expr", {
         "Assign"   : ("name: Token", "value: Expr"),
         "Binary"   : ("left: Expr", "operator: Token", "right: Expr"),
+        "Call"     : ("callee: Expr", "paren: Token", "arguments: List[Expr]"),
         "Grouping" : ("expression: Expr", ),
         "Literal"  : ("value: object", ),
         "Logical"  : ("left: Expr", "operator: Token", "right: Expr"), 
@@ -101,6 +102,7 @@ def main(args):
     define_ast(output_dir, "Stmt", {
         "Block"      : ("statements: List[Stmt]", ),
         "Expression" : ("expression: Expr", ),
+        "Function"   : ("name: Token", "params: List[Token]", "body: List[Stmt]"),
         "If"         : ("condition: Expr", "then_branch: Stmt", "else_branch: Stmt"),
         "Print"      : ("expression: Expr", ),
         "Var"        : ("name: Token", "initializer: Expr"),

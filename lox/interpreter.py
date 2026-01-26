@@ -1,14 +1,32 @@
+import time
+
 from lox.Expr import exprVisitor
 from lox.Stmt import Stmt, stmtVisitor
 from lox.token import TokenType
 from lox.environment import Environment
 from lox.exception import RuntimeException
+from lox.lox_callable import LoxCallable
+from lox.lox_function import LoxFunction
 
 class Interpreter(exprVisitor, stmtVisitor):
 
     def __init__(self, error_handler):
         self.error_handler = error_handler
-        self.environment   = Environment()
+        self.globals       = Environment()
+        self.environment   = self.globals
+
+        # Create a concrete LoxCallable class for clock
+        class _(LoxCallable):
+            def arity():
+                return 0
+            
+            def call(interpreter, arguments):
+                return time.time()
+            
+            def __str__(self):
+                return "<native fn>"
+            
+        self.globals.define("clock", _())
 
     def evaluate(self, expr):
         return expr.accept(self)
@@ -31,6 +49,10 @@ class Interpreter(exprVisitor, stmtVisitor):
     
     def visit_expression_stmt(self, stmt):
         self.evaluate(stmt.expression)
+    
+    def visit_function_stmt(self, stmt):
+        function = LoxFunction(stmt)
+        self.environment.define(stmt.name.lexeme, function)
     
     def visit_if_stmt(self, stmt):
         if self.is_truthy(self.evaluate(stmt.condition)):
@@ -105,6 +127,24 @@ class Interpreter(exprVisitor, stmtVisitor):
                 return not self.is_equal(left, right)
             case TokenType.EQUAL_EQUAL:
                 return self.is_equal(left, right)
+    
+    def visit_call_expr(self, expr):
+        callee = self.evaluate(expr.callee)
+
+        arguments = []
+        for argument in expr.arguments:
+            arguments.append(self.evaluate(argument))
+        
+        if not isinstance(callee, LoxCallable):
+            raise RuntimeException(expr.paren, "Can only call functions and classes.")
+        
+        # print(type(callee))
+        # function = LoxCallable(callee)
+
+        if len(arguments) != callee.arity():
+            raise RuntimeException(expr.paren, f"Expected {callee.arity()} arguments but got {len(arguments)}.")
+        
+        return callee.call(self, arguments)
     
     def visit_literal_expr(self, expr):
         return expr.value
