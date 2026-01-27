@@ -29,6 +29,10 @@ class stmtVisitor(ABC):
         pass
 
     @abstractmethod
+    def visit_return_stmt(self, stmt: Return):
+        pass
+
+    @abstractmethod
     def visit_var_stmt(self, stmt: Var):
         pass
 
@@ -80,6 +84,14 @@ class Print(Stmt):
 
     def accept(self, visitor: stmtVisitor):
         return visitor.visit_print_stmt(self)
+
+class Return(Stmt):
+    def __init__(self, keyword: Token, value: Expr):
+        self.keyword = keyword
+        self.value = value
+
+    def accept(self, visitor: stmtVisitor):
+        return visitor.visit_return_stmt(self)
 
 class Var(Stmt):
     def __init__(self, name: Token, initializer: Expr):
