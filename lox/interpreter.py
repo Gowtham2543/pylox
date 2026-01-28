@@ -4,7 +4,7 @@ from lox.Expr import exprVisitor
 from lox.Stmt import Stmt, stmtVisitor
 from lox.token import TokenType
 from lox.environment import Environment
-from lox.exception import RuntimeException
+from lox.exception import RuntimeException, Return
 from lox.lox_callable import LoxCallable
 from lox.lox_function import LoxFunction
 
@@ -63,6 +63,13 @@ class Interpreter(exprVisitor, stmtVisitor):
     def visit_print_stmt(self, stmt):
         value = self.evaluate(stmt.expression)
         print(self.stringify(value))
+    
+    def visit_return_stmt(self, stmt):
+        value = None
+        if stmt.value:
+            value = self.evaluate(stmt.value)
+        
+        raise Return(value)
     
     def visit_var_stmt(self, stmt):
         value = None
