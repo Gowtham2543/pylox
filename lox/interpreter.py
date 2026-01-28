@@ -1,8 +1,9 @@
 import time
 
-from lox.Expr import exprVisitor
+from lox.Expr import exprVisitor, Expr
 from lox.Stmt import Stmt, stmtVisitor
-from lox.token import TokenType
+from lox.token_type import TokenType
+from lox.token import Token
 from lox.environment import Environment
 from lox.exception import RuntimeException, Return
 from lox.lox_callable import LoxCallable
@@ -14,6 +15,7 @@ class Interpreter(exprVisitor, stmtVisitor):
         self.error_handler = error_handler
         self.globals       = Environment()
         self.environment   = self.globals
+        self.locals        = {}
 
         # Create a concrete LoxCallable class for clock
         class _(LoxCallable):
@@ -33,6 +35,9 @@ class Interpreter(exprVisitor, stmtVisitor):
     
     def execute(self, statement):
         statement.accept(self)
+    
+    def resolve(self, expr: Expr, depth: int):
+        self.locals[expr] = depth
     
     def execute_block(self, statements, environment):
         previous = self.environment
@@ -86,7 +91,15 @@ class Interpreter(exprVisitor, stmtVisitor):
     
     def visit_assign_expr(self, expr):
         value = self.evaluate(expr.value)
-        self.environment.assign(expr.name, value)
+
+        if expr not in self.locals:
+            distance = self.locals[expr]
+            self.environment.assign_at(distance, expr.name, value)
+        else:
+            self.globals.assign(expr.name, value)
+        
+        return value
+
         return value
 
     def interpret(self, statements):
@@ -182,7 +195,15 @@ class Interpreter(exprVisitor, stmtVisitor):
                 return -float(right)
     
     def visit_variable_expr(self, expr):
-        return self.environment.get(expr.name)
+        return self.lookup_variable(expr.name, expr)
+
+    def lookup_variable(self, name: Token, expr: Expr):
+        if expr in self.locals:
+            distance = self.locals[expr]
+            return self.environment.get_at(distance, name.lexeme)
+
+        return self.globals.get(name)
+
     
     def check_number_operand(self, operator, operand):
         if isinstance(operand, float):

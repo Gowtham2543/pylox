@@ -6,6 +6,7 @@ from lox.token_type import TokenType
 from lox.parser import Parser
 from lox.ast_printer import ASTPrinter
 from lox.interpreter import Interpreter
+from lox.resolver import Resolver
 
 
 class Lox:
@@ -40,11 +41,16 @@ class Lox:
 
         if Lox.had_error:
             return
-
+        
+        
         # In a REPL every time the interpreter object will be intialized, deleting the environment,
         # which is wrong
         # interpreter = Interpreter(Lox.runtime_error)
         interpreter = Lox.get_interpreter()
+
+        resolver = Resolver(interpreter, Lox.token_error)
+        resolver.resolve_statements(statements)
+
         interpreter.interpret(statements)
     
     @staticmethod
