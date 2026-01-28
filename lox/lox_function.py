@@ -3,14 +3,15 @@ from lox.environment import Environment
 from lox.exception import Return
 
 class LoxFunction(LoxCallable):
-    def __init__(self, declaration):
+    def __init__(self, declaration, closure):
+        self.closure = closure
         self.declaration = declaration
     
     def arity(self):
         return len(self.declaration.params)
     
     def call(self, interpreter, arguments):
-        environment = Environment(interpreter.globals)
+        environment = Environment(self.closure)
 
         for i in range(len(self.declaration.params)):
             environment.define(self.declaration.params[i].lexeme, arguments[i])
