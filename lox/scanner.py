@@ -31,14 +31,14 @@ class Scanner:
         self.start = 0
         self.current = 0
         self.line = 1
-        
+
     def scan_tokens(self):
         while not self.is_at_end():
             self.start = self.current
             self.scan_token()
 
         self.tokens.append(Token(TokenType.EOF, "", None, self.line))
-        return self.tokens 
+        return self.tokens
 
     def scan_token(self):
         char = self.advance()
@@ -97,11 +97,11 @@ class Scanner:
                     self.identifier()
                 else:
                     self.error_handler(self.line, "Unexpected Character.")
-    
+
     def identifier(self):
         while self.is_alpha_numeric(self.peek()):
             self.advance()
-        
+
         text = self.source[self.start:self.current]
         type = KEYWORDS.get(text, TokenType.IDENTIFIER)
         self.add_token(type)
@@ -111,27 +111,27 @@ class Scanner:
             if self.peek() == '\n':
                 self.line += 1
             self.advance()
-        
+
         if self.is_at_end():
             self.error_handler(self.line, "Unterminated string.")
             return
-        
+
         # Closing "
         self.advance()
 
         # Trim the surrounding quotes
         value = self.source[self.start + 1:self.current - 1]
         self.add_token(TokenType.STRING, value)
-    
+
     def number(self):
         while self.is_digit(self.peek()):
             self.advance()
-        
+
         # Look for fraction
         if self.peek() == '.' and self.is_digit(self.peek_next()):
             # Consume the "."
             self.advance()
-        
+
         while self.is_digit(self.peek()):
             self.advance()
 
@@ -140,21 +140,21 @@ class Scanner:
     def match(self, expected: str):
         if self.is_at_end():
             return False
-        
+
         if self.source[self.current] != expected:
             return False
 
         # Only consume when expected character is found
         self.current += 1
         return True
-    
+
     def peek(self):
         '''
         Peek at the next character without moving the current
         '''
         if self.is_at_end():
             return '\0'
-        
+
         return self.source[self.current]
 
     def peek_next(self):
@@ -170,20 +170,20 @@ class Scanner:
 
     def is_digit(self, c: str):
         return ord('0') <= ord(c) <= ord('9')
-    
+
     def is_alpha_numeric(self, c: str):
         return self.is_alpha(c) or self.is_digit(c)
-    
+
     def advance(self):
         '''
         Return the current character and move the current by 1
         '''
         self.current += 1
         return self.source[self.current - 1]
-        
+
     def add_token(self, token_type: TokenType, literal: object | None = None):
         text = self.source[self.start:self.current]
         self.tokens.append(Token(token_type, text, literal, self.line))
-        
+
     def is_at_end(self):
         return self.current >= len(self.source)
