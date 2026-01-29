@@ -24,4 +24,3 @@ class ASTPrinter(exprVisitor):
     def paranthesize(self, name: str, *args: Expr):
         content = [expr.accept(self) for expr in args]
         return f"({name} {' '.join(content)})"
-            

@@ -31,9 +31,9 @@ class Parser:
     # function → IDENTIFIER "(" parameters? ")" block;
     # varDecl → "var" IDENTIFIER ( "=" expression )? ";";
     # statement → exprStmt | forStmt | ifStmt | printStmt | whileStmt | block;
-    # forStmt → "for" "(" (varDecl | exprStmt | ";") expression? ";" expression? ")" statement;    
+    # forStmt → "for" "(" (varDecl | exprStmt | ";") expression? ";" expression? ")" statement;
     # ifStmt → "if" "(" expression ")" statement ( "else" statement )?;
-    # whileStmt → "while" "(" expression ")" statement; 
+    # whileStmt → "while" "(" expression ")" statement;
     # block → "{" declaration "}"
     # exprStmt → expression ";" ;
     # printStmt → "print" expression ";" ;
@@ -42,15 +42,15 @@ class Parser:
         self.tokens = tokens
         self.error_handler = error_handler
         self.current = 0
-    
+
     def parse(self):
         statements = []
 
         while not self.is_at_end():
             statements.append(self.declaration())
-        
+
         return statements
-    
+
     def expression(self):
         return self.assignment()
 
@@ -63,7 +63,7 @@ class Parser:
             return self.statement()
         except ParserException as exc:
             self.synchronize()
-    
+
     def statement(self):
         if self.match(TokenType.FOR):
             return self.for_statement()
@@ -77,9 +77,9 @@ class Parser:
             return self.while_statement()
         if self.match(TokenType.LEFT_BRACE):
             return Block(self.block())
-        
+
         return self.expression_statements()
-    
+
     def for_statement(self):
         # This is just sugarized version of while loop
         self.consume(TokenType.LEFT_PAREN, "Expect '(' after 'for'.")
@@ -92,17 +92,17 @@ class Parser:
             initializer = self.var_declaration()
         else:
             initializer = self.expression_statements()
-        
+
         condition = None
         if not self.check(TokenType.SEMICOLON):
             condition = self.expression()
-        
+
         self.consume(TokenType.SEMICOLON, "Expect ';' after loop condition.")
 
         increment = None
         if not self.check(TokenType.RIGHT_PAREN):
             increment = self.expression()
-        
+
         self.consume(TokenType.RIGHT_PAREN, "Expect ')' after for clauses.")
 
         body = self.statement()
@@ -132,31 +132,31 @@ class Parser:
 
         if self.match(TokenType.ELSE):
             else_branch = self.statement()
-        
+
         return If(condition, then_branch, else_branch)
-    
+
     def print_statements(self):
         value = self.expression()
         self.consume(TokenType.SEMICOLON, "Expect ';' after value")
         return Print(value)
-    
+
     def return_statements(self):
         keyword = self.previous()
         value = None
 
         if not self.check(TokenType.SEMICOLON):
             value = self.expression()
-        
+
         self.consume(TokenType.SEMICOLON, "Expect ; after return value.")
         return Return(keyword, value)
-    
+
     def var_declaration(self):
         name = self.consume(TokenType.IDENTIFIER, "Expect variable name.")
 
         initializer = None
         if self.match(TokenType.EQUAL):
             initializer = self.expression()
-        
+
         self.consume(TokenType.SEMICOLON, "Expect ';' after variable declaration.")
         return Var(name, initializer)
 
@@ -196,10 +196,10 @@ class Parser:
 
         while not self.check(TokenType.RIGHT_BRACE) and not self.is_at_end():
             statements.append(self.declaration())
-        
+
         self.consume(TokenType.RIGHT_BRACE, "Expect '}' after block.")
         return statements
-    
+
     def assignment(self):
         expr = self.logical_or()
 
@@ -214,7 +214,7 @@ class Parser:
             self.error(equals, "Invalid assignment target.")
 
         return expr
-    
+
     def logical_or(self):
         expr = self.logical_and()
 
@@ -222,9 +222,9 @@ class Parser:
             operator = self.previous()
             right = self.logical_and()
             expr = Logical(expr, operator, right)
-        
+
         return expr
-    
+
     def logical_and(self):
         expr = self.equality()
 
@@ -232,7 +232,7 @@ class Parser:
             operator = self.previous()
             right = self.equality()
             expr = Logical(expr, operator, right)
-        
+
         return expr
 
     # equality -> comparison ( ("!=" | "==" ) comparison)*
@@ -243,7 +243,7 @@ class Parser:
             operator = self.previous()
             right = self.comparison()
             expr = Binary(expr, operator, right)
-        
+
         return expr
 
     # comparison → term ( ( ">" | ">=" | "<" | "<=" ) term )*
@@ -254,7 +254,7 @@ class Parser:
             operator = self.previous()
             right = self.term()
             expr = Binary(expr, operator, right)
-        
+
         return expr
 
     # term → factor ( ( "-" | "+" ) factor )*
@@ -265,7 +265,7 @@ class Parser:
             operator = self.previous()
             right = self.factor()
             expr = Binary(expr, operator, right)
-        
+
         return expr
 
     # factor → unary ( ( "/" | "*" ) unary )*
@@ -276,18 +276,18 @@ class Parser:
             operator = self.previous()
             right = self.unary()
             expr = Binary(expr, operator, right)
-        
+
         return expr
-    
+
     # unary → ( "!" | "-" ) unary | primary
     def unary(self):
         if self.match(TokenType.BANG, TokenType.MINUS):
             operator = self.previous()
             right = self.unary()
             return Unary(operator, right)
-        
+
         return self.call()
-    
+
     def finish_call(self, callee):
         arguments = []
 
@@ -296,11 +296,11 @@ class Parser:
 
             while self.match(TokenType.COMMA):
                 arguments.append(self.expression())
-        
+
         paren = self.consume(TokenType.RIGHT_PAREN, "Expect ')' after arguments.")
 
         return Call(callee, paren, arguments)
-    
+
     def call(self):
         expr = self.primary()
 
@@ -309,7 +309,7 @@ class Parser:
                 expr = self.finish_call(expr)
             else:
                 break
-        
+
         return expr
 
     # primary → NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" | IDENTIFIER
@@ -325,43 +325,43 @@ class Parser:
 
         if self.match(TokenType.NUMBER, TokenType.STRING):
             return Literal(self.previous().literal)
-        
+
         if self.match(TokenType.IDENTIFIER):
             return Variable(self.previous())
-        
+
         if self.match(TokenType.LEFT_PAREN):
             expr = self.expression()
             self.consume(TokenType.RIGHT_PAREN, "Expect ) afer expression")
             return Grouping(expr)
-        
+
         raise self.error(self.peek(), "Expect expression")
-    
+
     def match(self, *token_types) -> bool:
         for token_type in token_types:
             if self.check(token_type):
                 self.advance()
                 return True
-        
+
         return False
-    
+
     def consume(self, token_type: TokenType, message: str):
         if self.check(token_type):
             return self.advance()
 
         raise self.error(self.peek(), message)
-    
+
     def check(self, token_type) -> bool:
         if self.is_at_end():
             return False
 
-        return self.peek().token_type == token_type       
+        return self.peek().token_type == token_type
 
     def advance(self):
         if not self.is_at_end():
             self.current += 1
 
         return self.previous()
-    
+
     def is_at_end(self) -> bool:
         return self.peek().token_type == TokenType.EOF
 
@@ -380,14 +380,14 @@ class Parser:
     def error(self, token: Token, message: str):
         self.error_handler(token, message)
         return ParserException()
-    
+
     def synchronize(self):
         self.advance()
 
         while not self.is_at_end():
             if self.previous().token_type == TokenType.SEMICOLON:
                 return
-        
+
         match self.peek().token_type:
             case TokenType.CLASS:
                 pass
@@ -405,6 +405,5 @@ class Parser:
                 pass
             case TokenType.RETURN:
                 return
-            
+
         self.advance()
-        

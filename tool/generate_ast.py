@@ -7,8 +7,8 @@ from typing import Tuple
 
 INDENTATION = "    "
 
-COMMON_IMPORTS = ("from __future__ import annotations\n", 
-                   "from abc import ABC, abstractmethod", 
+COMMON_IMPORTS = ("from __future__ import annotations\n",
+                   "from abc import ABC, abstractmethod",
                    "from typing import List\n")
 
 
@@ -33,7 +33,7 @@ def define_type(file, base_name, class_name, fields):
         attr = field.split(':')[0]
         file.write(f"{INDENTATION * 2}self.{attr} = {attr}")
         file.write('\n')
-    
+
     file.write('\n')
     file.write(f"{INDENTATION}def accept(self, visitor: {base_name.lower()}Visitor):")
     file.write('\n')
@@ -52,7 +52,7 @@ def define_visitor(file, base_name: str, expr_types: dict):
         file.write('\n')
         file.write(f'{INDENTATION * 2}pass')
         file.write('\n')
-    
+
 
 def define_imports(file, imports):
     file.write('\n'.join(imports))
@@ -84,7 +84,7 @@ def define_ast(output_dir: str, base_name: str, expr_types: dict, imports: Tuple
 def main(args):
     if len(args) != 2:
         print("Usage: generate_ast.py <output directory>")
-    
+
     output_dir = args[1]
 
     define_ast(output_dir, "Expr", {
@@ -93,7 +93,7 @@ def main(args):
         "Call"     : ("callee: Expr", "paren: Token", "arguments: List[Expr]"),
         "Grouping" : ("expression: Expr", ),
         "Literal"  : ("value: object", ),
-        "Logical"  : ("left: Expr", "operator: Token", "right: Expr"), 
+        "Logical"  : ("left: Expr", "operator: Token", "right: Expr"),
         "Unary"    : ("operator: Token", "right: Expr"),
         "Variable" : ("name: Token", )
     },

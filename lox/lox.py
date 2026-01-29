@@ -28,7 +28,7 @@ class Lox:
 
             if not line:
                 break
-        
+
             Lox.run(line)
             Lox.had_error = False
 
@@ -41,8 +41,8 @@ class Lox:
 
         if Lox.had_error:
             return
-        
-        
+
+
         # In a REPL every time the interpreter object will be intialized, deleting the environment,
         # which is wrong
         # interpreter = Interpreter(Lox.runtime_error)
@@ -52,7 +52,7 @@ class Lox:
         resolver.resolve_statements(statements)
 
         interpreter.interpret(statements)
-    
+
     @staticmethod
     def run_file(path):
         source = Path(path).read_text()
@@ -60,7 +60,7 @@ class Lox:
 
         if Lox.had_error:
             exit(65)
-        
+
         if Lox.had_runtime_error:
             exit(70)
 
@@ -79,7 +79,7 @@ class Lox:
     def report(line, where, message):
         print(f'[line {line}] Error {where} : {message}' )
         Lox.had_error = True
-    
+
     @staticmethod
     def runtime_error(error):
         print(f"{str(error)}\n[line {error.token.line}]")
