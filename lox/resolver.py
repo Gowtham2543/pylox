@@ -1,12 +1,21 @@
+from enum import Enum
+
 from lox.Expr import exprVisitor
 from lox.Stmt import stmtVisitor
 from lox.token import Token
+
+
+class FunctionType(Enum):
+    NONE = "None"
+    FUNCTION = "FUNCTION"
+
 
 class Resolver(exprVisitor, stmtVisitor):
     def __init__(self, interpreter, error_handler):
         self.interpreter = interpreter
         self.scopes = []
         self.stack = []
+        self.current_function = FunctionType.NONE
         self.error_handler = error_handler
 
     def visit_block_stmt(self, stmt):
@@ -28,6 +37,9 @@ class Resolver(exprVisitor, stmtVisitor):
         self.resolve_expr(stmt.expression)
 
     def visit_return_stmt(self, stmt):
+        if self.current_function == FunctionType.NONE:
+            self.error_handler(stmt.keyword, "Can't return from top-level code.")
+
         if stmt.value:
             self.resolve_expr(stmt.value)
 
@@ -74,7 +86,7 @@ class Resolver(exprVisitor, stmtVisitor):
         self.declare(stmt.name)
         self.define(stmt.name)
 
-        self.resolve_function(stmt)
+        self.resolve_function(stmt, FunctionType.FUNCTION)
 
     def visit_variable_expr(self, expr):
         if self.scopes and expr.name.lexeme in self.scopes[-1] and self.scopes[-1][expr.name.lexeme] == False:
@@ -92,7 +104,10 @@ class Resolver(exprVisitor, stmtVisitor):
     def resolve_expr(self, expr):
         expr.accept(self)
 
-    def resolve_function(self, function):
+    def resolve_function(self, function, function_type):
+        enclosing_function = self.current_function
+        self.current_function = function_type
+
         self.begin_scope()
 
         for param in function.params:
@@ -101,6 +116,8 @@ class Resolver(exprVisitor, stmtVisitor):
 
         self.resolve_statements(function.body)
         self.end_scope()
+
+        self.current_function = enclosing_function
 
     def begin_scope(self):
         self.scopes.append({})
@@ -111,6 +128,10 @@ class Resolver(exprVisitor, stmtVisitor):
     def declare(self, name):
         if not self.scopes:
             return
+
+        scope = self.scopes[-1]
+        if name.lexeme in scope:
+            self.error_handler(name, "Already variable with this name in this scope.")
 
         self.scopes[-1][name.lexeme] = False
 

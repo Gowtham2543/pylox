@@ -51,6 +51,10 @@ class Lox:
         resolver = Resolver(interpreter, Lox.token_error)
         resolver.resolve_statements(statements)
 
+        # Stop if there was a resolution
+        if Lox.had_error:
+            return
+
         interpreter.interpret(statements)
 
     @staticmethod
