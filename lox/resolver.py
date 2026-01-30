@@ -95,7 +95,7 @@ class Resolver(ExprVisitor, StmtVisitor):
 
     def visit_while_stmt(self, stmt):
         self.resolve_expr(stmt.condition)
-        self.resolve_stmts(stmt.body)
+        self.resolve_statements(stmt.body)
 
     def visit_var_stmt(self, stmt):
         self.declare(stmt.name)
@@ -130,8 +130,8 @@ class Resolver(ExprVisitor, StmtVisitor):
         self.resolve_expr(expr.right)
     
     def visit_set_expr(self, expr):
-        self.resolve(expr.value)
-        self.resolve(expr.object)
+        self.resolve_expr(expr.value)
+        self.resolve_expr(expr.object)
     
     def visit_super_expr(self, expr):
         if self.current_class == ClassType.NONE:
