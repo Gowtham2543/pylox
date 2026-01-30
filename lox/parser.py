@@ -2,7 +2,7 @@ from typing import List
 
 from lox.token import Token
 from lox.token_type import TokenType
-from lox.Expr import Binary, Unary, Literal, Grouping, Variable, Assign, Logical, Call, Get, Set, This
+from lox.Expr import Binary, Unary, Literal, Grouping, Variable, Assign, Logical, Call, Get, Set, This, Super
 from lox.Stmt import Print, Expression, Var, Block, If, While, Function, Return, Class
 
 
@@ -22,12 +22,12 @@ class Parser:
     # unary → ( "!" | "-" ) unary | call ;
     # call → primary ( "(" arguments? ")" | "." IDENTIFIER )*;
     # arguments → expression ( "," expression )*;
-    # primary → NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" | IDENTIFIER;
+    # primary → NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" | "super" "." IDENTIFIER;
 
     # program → declaration* EOF ;
 
     # declaration → classDecl | funDecl | varDecl | statement ;
-    # classDecl → "class" IDENTIFIER "{" function* "}";
+    # classDecl → "class" IDENTIFIER ( "<" IDENTIFIER )? "{" function* "}";
     # funDecl → "fun" function;
     # function → IDENTIFIER "(" parameters? ")" block;
     # varDecl → "var" IDENTIFIER ( "=" expression )? ";";
@@ -69,6 +69,12 @@ class Parser:
     
     def class_declaration(self):
         name = self.consume(TokenType.IDENTIFIER, "Expect class name.")
+
+        super_class = None
+        if self.match(TokenType.LESS):
+            self.consume(TokenType.IDENTIFIER, "Expect superclass name.")
+            super_class = Variable(self.previous())
+
         self.consume(TokenType.LEFT_BRACE, "Expect '{' before class body.")
 
         methods = []
@@ -78,7 +84,7 @@ class Parser:
         
         self.consume(TokenType.RIGHT_BRACE, "Expect '}' after class body.")
 
-        return Class(name, methods)
+        return Class(name, super_class, methods)
 
     def statement(self):
         if self.match(TokenType.FOR):
@@ -347,6 +353,13 @@ class Parser:
 
         if self.match(TokenType.NUMBER, TokenType.STRING):
             return Literal(self.previous().literal)
+    
+        if self.match(TokenType.SUPER):
+            keyword = self.previous()
+            self.consume(TokenType.DOT, "Expect '.' after 'super'.")
+            method = self.consume(TokenType.IDENTIFIER, "Expect superclass method name.")
+
+            return Super(keyword, method)
 
         if self.match(TokenType.THIS):
             return This(self.previous())

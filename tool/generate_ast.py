@@ -18,7 +18,7 @@ EXPRESSION_IMPORTS = COMMON_IMPORTS + (
 
 STATEMENTS_IMPORTS = COMMON_IMPORTS + (
     "from lox.token import Token",
-    "from lox.Expr import Expr",
+    "from lox.Expr import Expr, Variable",
 )
 
 
@@ -96,6 +96,7 @@ def main(args):
         "Literal"  : ("value: object", ),
         "Logical"  : ("left: Expr", "operator: Token", "right: Expr"),
         "Set"      : ("object: Expr", "name: Token", "value: Expr"),
+        "Super"    : ("keyword: Token", "method: Token"),
         "This"     : ("keyword: Token", ),
         "Unary"    : ("operator: Token", "right: Expr"),
         "Variable" : ("name: Token", )
@@ -104,7 +105,7 @@ def main(args):
 
     define_ast(output_dir, "Stmt", {
         "Block"      : ("statements: List[Stmt]", ),
-        "Class"      : ("name: Token", "methods: List[Function]"),
+        "Class"      : ("name: Token", "super_class: Variable", "methods: List[Function]"),
         "Expression" : ("expression: Expr", ),
         "Function"   : ("name: Token", "params: List[Token]", "body: List[Stmt]"),
         "If"         : ("condition: Expr", "then_branch: Stmt", "else_branch: Stmt"),

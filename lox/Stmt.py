@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from typing import List
 
 from lox.token import Token
-from lox.Expr import Expr
+from lox.Expr import Expr, Variable
 
 
 class stmtVisitor(ABC):
@@ -58,8 +58,9 @@ class Block(Stmt):
         return visitor.visit_block_stmt(self)
 
 class Class(Stmt):
-    def __init__(self, name: Token, methods: List[Function]):
+    def __init__(self, name: Token, super_class: Variable, methods: List[Function]):
         self.name = name
+        self.super_class = super_class
         self.methods = methods
 
     def accept(self, visitor: stmtVisitor):

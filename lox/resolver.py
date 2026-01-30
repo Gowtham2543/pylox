@@ -15,6 +15,7 @@ class FunctionType(Enum):
 class ClassType(Enum):
     NONE = "None"
     CLASS = "CLASS"
+    SUBCLASS = "SUBCLASS"
 
 
 class Resolver(exprVisitor, stmtVisitor):
@@ -38,6 +39,17 @@ class Resolver(exprVisitor, stmtVisitor):
         self.declare(stmt.name)
         self.define(stmt.name)
 
+        if stmt.super_class and stmt.name.lexeme == stmt.super_class.name.lexeme:
+            self.error_handler(stmt.super_class.name, "A class can't inherit from itself.")
+
+        if stmt.super_class:
+            self.current_class = ClassType.SUBCLASS
+            self.resolve_expr(stmt.super_class)
+        
+        if stmt.super_class:
+            self.begin_scope()
+            self.scopes[-1]["super"] = True
+
         self.begin_scope()
         self.scopes[-1]["this"] = True
 
@@ -49,6 +61,10 @@ class Resolver(exprVisitor, stmtVisitor):
             self.resolve_function(method, declaration)
         
         self.end_scope()
+
+        if stmt.super_class:
+            self.end_scope()
+
         self.current_class = enclosing_class
     
     def visit_get_expr(self, expr):
@@ -74,7 +90,7 @@ class Resolver(exprVisitor, stmtVisitor):
         if stmt.value:
             if self.current_function == FunctionType.INITIALIZER:
                 self.error_handler(stmt.keyword, "Can't return a value from an initializer.")
-                
+
             self.resolve_expr(stmt.value)
 
     def visit_while_stmt(self, stmt):
@@ -116,6 +132,13 @@ class Resolver(exprVisitor, stmtVisitor):
     def visit_set_expr(self, expr):
         self.resolve(expr.value)
         self.resolve(expr.object)
+    
+    def visit_super_expr(self, expr):
+        if self.current_class == ClassType.NONE:
+            self.error_handler(expr.keyword, "Can't use 'super' outside of a class.")
+        elif self.current_class != ClassType.SUBCLASS:
+            self.error_handler(expr.keyword, "Can't use 'super' in a class with no superclass.")
+        self.resolve_local(expr, expr.keyword)
     
     def visit_this_expr(self, expr):
         if self.current_class == ClassType.NONE:
