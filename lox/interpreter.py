@@ -8,6 +8,8 @@ from lox.environment import Environment
 from lox.exception import RuntimeException, Return
 from lox.lox_callable import LoxCallable
 from lox.lox_function import LoxFunction
+from lox.lox_class import LoxClass
+from lox.lox_instance import LoxInstance
 
 class Interpreter(exprVisitor, stmtVisitor):
 
@@ -51,12 +53,30 @@ class Interpreter(exprVisitor, stmtVisitor):
 
     def visit_block_stmt(self, stmt):
         self.execute_block(stmt.statements, Environment(self.environment))
+    
+    def visit_class_stmt(self, stmt):
+        self.environment.define(stmt.name.lexeme, None)
+
+        methods = {}
+        for method in stmt.methods:
+            function = LoxFunction(method, self.environment, method.name.lexeme == "init")
+            methods[method.name.lexeme] = function
+        
+        klass = LoxClass(stmt.name.lexeme, methods)
+        self.environment.assign(stmt.name, klass)
+    
+    def visit_get_expr(self, expr):
+        object = self.evaluate(expr.object)
+        if isinstance(object, LoxInstance):
+            return object.get(expr.name)
+
+        raise RuntimeException(expr.name, "Only instances have properties.")
 
     def visit_expression_stmt(self, stmt):
         self.evaluate(stmt.expression)
 
     def visit_function_stmt(self, stmt):
-        function = LoxFunction(stmt, self.environment)
+        function = LoxFunction(stmt, self.environment, False)
         self.environment.define(stmt.name.lexeme, function)
 
     def visit_if_stmt(self, stmt):
@@ -180,6 +200,20 @@ class Interpreter(exprVisitor, stmtVisitor):
                 return left
 
         return self.evaluate(expr.right)
+
+    def visit_set_expr(self, expr):
+        object = self.evaluate(expr.object)
+
+        if not isinstance(object, LoxInstance):
+            raise RuntimeException(expr.name, "Only instances have fields.")
+
+        value = self.evaluate(expr.value)
+        object.set(expr.name, value)
+
+        return value
+
+    def visit_this_expr(self, expr):
+        return self.lookup_variable(expr.keyword, expr)
 
     def visit_grouping_expr(self, expr):
         return self.evaluate(expr.expression)

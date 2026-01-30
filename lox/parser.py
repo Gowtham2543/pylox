@@ -2,8 +2,8 @@ from typing import List
 
 from lox.token import Token
 from lox.token_type import TokenType
-from lox.Expr import Binary, Unary, Literal, Grouping, Variable, Assign, Logical, Call
-from lox.Stmt import Print, Expression, Var, Block, If, While, Function, Return
+from lox.Expr import Binary, Unary, Literal, Grouping, Variable, Assign, Logical, Call, Get, Set, This
+from lox.Stmt import Print, Expression, Var, Block, If, While, Function, Return, Class
 
 
 class ParserException(Exception):
@@ -12,7 +12,7 @@ class ParserException(Exception):
 class Parser:
 
     # expression → assigment ;
-    # assignment → IDENTIFIER "=" assignment | logic_or ;
+    # assignment → ( call "." )? IDENTIFIER "=" assignment | logic_or ;
     # logic_or → logic_and ( "or" logic_and)*;
     # logic_and → equality ( "and" equality)*;
     # equality → comparison ( ( "!=" | "==" ) comparison )* ;
@@ -20,13 +20,14 @@ class Parser:
     # term → factor ( ( "-" | "+" ) factor )* ;
     # factor → unary ( ( "/" | "*" ) unary )* ;
     # unary → ( "!" | "-" ) unary | call ;
-    # call → primary ( "(" arguments? ")" )*;
+    # call → primary ( "(" arguments? ")" | "." IDENTIFIER )*;
     # arguments → expression ( "," expression )*;
     # primary → NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" | IDENTIFIER;
 
     # program → declaration* EOF ;
 
-    # declaration → funDecl | varDecl | statement ;
+    # declaration → classDecl | funDecl | varDecl | statement ;
+    # classDecl → "class" IDENTIFIER "{" function* "}";
     # funDecl → "fun" function;
     # function → IDENTIFIER "(" parameters? ")" block;
     # varDecl → "var" IDENTIFIER ( "=" expression )? ";";
@@ -56,6 +57,8 @@ class Parser:
 
     def declaration(self):
         try:
+            if self.match(TokenType.CLASS):
+                return self.class_declaration()
             if self.match(TokenType.FUN):
                 return self.function("function")
             if self.match(TokenType.VAR):
@@ -63,6 +66,19 @@ class Parser:
             return self.statement()
         except ParserException as exc:
             self.synchronize()
+    
+    def class_declaration(self):
+        name = self.consume(TokenType.IDENTIFIER, "Expect class name.")
+        self.consume(TokenType.LEFT_BRACE, "Expect '{' before class body.")
+
+        methods = []
+
+        while not self.check(TokenType.RIGHT_BRACE) and not self.is_at_end():
+            methods.append(self.function("method"))
+        
+        self.consume(TokenType.RIGHT_BRACE, "Expect '}' after class body.")
+
+        return Class(name, methods)
 
     def statement(self):
         if self.match(TokenType.FOR):
@@ -210,6 +226,9 @@ class Parser:
             if isinstance(expr, Variable):
                 name = expr.name
                 return Assign(name, value)
+            elif isinstance(expr, Get):
+                return Set(expr.object, expr.name, value)
+            
 
             self.error(equals, "Invalid assignment target.")
 
@@ -307,6 +326,9 @@ class Parser:
         while True:
             if self.match(TokenType.LEFT_PAREN):
                 expr = self.finish_call(expr)
+            elif (self.match(TokenType.DOT)):
+                name = self.consume(TokenType.IDENTIFIER, "Exact property name after '.'.")
+                expr = Get(expr, name)
             else:
                 break
 
@@ -325,6 +347,9 @@ class Parser:
 
         if self.match(TokenType.NUMBER, TokenType.STRING):
             return Literal(self.previous().literal)
+
+        if self.match(TokenType.THIS):
+            return This(self.previous())
 
         if self.match(TokenType.IDENTIFIER):
             return Variable(self.previous())

@@ -42,7 +42,6 @@ class Lox:
         if Lox.had_error:
             return
 
-
         # In a REPL every time the interpreter object will be intialized, deleting the environment,
         # which is wrong
         # interpreter = Interpreter(Lox.runtime_error)
