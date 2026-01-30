@@ -6,5 +6,5 @@ class LoxCallable(ABC):
         pass
 
     @abstractmethod
-    def arity(self):
+    def arity(self) -> int:
         pass

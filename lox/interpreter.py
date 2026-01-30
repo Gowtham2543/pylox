@@ -130,8 +130,6 @@ class Interpreter(ExprVisitor, StmtVisitor):
 
         return value
 
-        return value
-
     def interpret(self, statements):
         try:
             for statement in statements:

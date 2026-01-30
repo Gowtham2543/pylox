@@ -1,3 +1,7 @@
+class ParserException(Exception):
+    pass
+
+
 class RuntimeException(Exception):
     def __init__(self, token, message):
         self.token = token
