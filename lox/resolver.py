@@ -1,7 +1,7 @@
 from enum import Enum
 
-from lox.Expr import exprVisitor
-from lox.Stmt import stmtVisitor
+from lox.expr import ExprVisitor
+from lox.stmt import StmtVisitor
 from lox.token import Token
 
 
@@ -18,7 +18,7 @@ class ClassType(Enum):
     SUBCLASS = "SUBCLASS"
 
 
-class Resolver(exprVisitor, stmtVisitor):
+class Resolver(ExprVisitor, StmtVisitor):
     def __init__(self, interpreter, error_handler):
         self.interpreter = interpreter
         self.scopes = []

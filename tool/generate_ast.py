@@ -18,12 +18,12 @@ EXPRESSION_IMPORTS = COMMON_IMPORTS + (
 
 STATEMENTS_IMPORTS = COMMON_IMPORTS + (
     "from lox.token import Token",
-    "from lox.Expr import Expr, Variable",
+    "from lox.expr import Expr, Variable",
 )
 
 
 def define_type(file, base_name, class_name, fields):
-    file.write(f"class {class_name}({base_name}):")
+    file.write(f"class {class_name}({base_name.title()}):")
     file.write('\n')
 
     file.write(f"{INDENTATION}def __init__(self, {', '.join(fields)}):")
@@ -35,14 +35,14 @@ def define_type(file, base_name, class_name, fields):
         file.write('\n')
 
     file.write('\n')
-    file.write(f"{INDENTATION}def accept(self, visitor: {base_name.lower()}Visitor):")
+    file.write(f"{INDENTATION}def accept(self, visitor: {base_name.title()}Visitor):")
     file.write('\n')
     file.write(f"{INDENTATION * 2}return visitor.visit_{class_name.lower()}_{base_name.lower()}(self)")
     file.write('\n\n')
 
 
 def define_visitor(file, base_name: str, expr_types: dict):
-    file.write(f"class {base_name.lower()}Visitor(ABC):")
+    file.write(f"class {base_name.title()}Visitor(ABC):")
 
     for type in expr_types:
         file.write('\n')
@@ -66,11 +66,11 @@ def define_ast(output_dir: str, base_name: str, expr_types: dict, imports: Tuple
         file.write('\n\n\n')
         define_visitor(file, base_name, expr_types)
         file.write('\n\n')
-        file.write(f"class {base_name}(ABC):")
+        file.write(f"class {base_name.title()}(ABC):")
         file.write('\n')
         file.write(f"{INDENTATION}@abstractmethod")
         file.write('\n')
-        file.write(f"{INDENTATION}def accept(self, visitor: {base_name.lower()}Visitor):")
+        file.write(f"{INDENTATION}def accept(self, visitor: {base_name.title()}Visitor):")
         file.write('\n')
         file.write(f"{INDENTATION * 2}pass")
         file.write('\n\n')
@@ -87,7 +87,7 @@ def main(args):
 
     output_dir = args[1]
 
-    define_ast(output_dir, "Expr", {
+    define_ast(output_dir, "expr", {
         "Assign"   : ("name: Token", "value: Expr"),
         "Binary"   : ("left: Expr", "operator: Token", "right: Expr"),
         "Call"     : ("callee: Expr", "paren: Token", "arguments: List[Expr]"),
@@ -103,7 +103,7 @@ def main(args):
     },
     EXPRESSION_IMPORTS)
 
-    define_ast(output_dir, "Stmt", {
+    define_ast(output_dir, "stmt", {
         "Block"      : ("statements: List[Stmt]", ),
         "Class"      : ("name: Token", "super_class: Variable", "methods: List[Function]"),
         "Expression" : ("expression: Expr", ),

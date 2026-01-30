@@ -1,7 +1,7 @@
 import time
 
-from lox.Expr import exprVisitor, Expr
-from lox.Stmt import Stmt, stmtVisitor
+from lox.expr import ExprVisitor, Expr
+from lox.stmt import StmtVisitor
 from lox.token_type import TokenType
 from lox.token import Token
 from lox.environment import Environment
@@ -11,7 +11,7 @@ from lox.lox_function import LoxFunction
 from lox.lox_class import LoxClass
 from lox.lox_instance import LoxInstance
 
-class Interpreter(exprVisitor, stmtVisitor):
+class Interpreter(ExprVisitor, StmtVisitor):
 
     def __init__(self, error_handler):
         self.error_handler = error_handler

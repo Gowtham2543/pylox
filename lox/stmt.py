@@ -4,10 +4,10 @@ from abc import ABC, abstractmethod
 from typing import List
 
 from lox.token import Token
-from lox.Expr import Expr, Variable
+from lox.expr import Expr, Variable
 
 
-class stmtVisitor(ABC):
+class StmtVisitor(ABC):
     @abstractmethod
     def visit_block_stmt(self, stmt: Block):
         pass
@@ -47,14 +47,14 @@ class stmtVisitor(ABC):
 
 class Stmt(ABC):
     @abstractmethod
-    def accept(self, visitor: stmtVisitor):
+    def accept(self, visitor: StmtVisitor):
         pass
 
 class Block(Stmt):
     def __init__(self, statements: List[Stmt]):
         self.statements = statements
 
-    def accept(self, visitor: stmtVisitor):
+    def accept(self, visitor: StmtVisitor):
         return visitor.visit_block_stmt(self)
 
 class Class(Stmt):
@@ -63,14 +63,14 @@ class Class(Stmt):
         self.super_class = super_class
         self.methods = methods
 
-    def accept(self, visitor: stmtVisitor):
+    def accept(self, visitor: StmtVisitor):
         return visitor.visit_class_stmt(self)
 
 class Expression(Stmt):
     def __init__(self, expression: Expr):
         self.expression = expression
 
-    def accept(self, visitor: stmtVisitor):
+    def accept(self, visitor: StmtVisitor):
         return visitor.visit_expression_stmt(self)
 
 class Function(Stmt):
@@ -79,7 +79,7 @@ class Function(Stmt):
         self.params = params
         self.body = body
 
-    def accept(self, visitor: stmtVisitor):
+    def accept(self, visitor: StmtVisitor):
         return visitor.visit_function_stmt(self)
 
 class If(Stmt):
@@ -88,14 +88,14 @@ class If(Stmt):
         self.then_branch = then_branch
         self.else_branch = else_branch
 
-    def accept(self, visitor: stmtVisitor):
+    def accept(self, visitor: StmtVisitor):
         return visitor.visit_if_stmt(self)
 
 class Print(Stmt):
     def __init__(self, expression: Expr):
         self.expression = expression
 
-    def accept(self, visitor: stmtVisitor):
+    def accept(self, visitor: StmtVisitor):
         return visitor.visit_print_stmt(self)
 
 class Return(Stmt):
@@ -103,7 +103,7 @@ class Return(Stmt):
         self.keyword = keyword
         self.value = value
 
-    def accept(self, visitor: stmtVisitor):
+    def accept(self, visitor: StmtVisitor):
         return visitor.visit_return_stmt(self)
 
 class Var(Stmt):
@@ -111,7 +111,7 @@ class Var(Stmt):
         self.name = name
         self.initializer = initializer
 
-    def accept(self, visitor: stmtVisitor):
+    def accept(self, visitor: StmtVisitor):
         return visitor.visit_var_stmt(self)
 
 class While(Stmt):
@@ -119,6 +119,6 @@ class While(Stmt):
         self.condition = condition
         self.body = body
 
-    def accept(self, visitor: stmtVisitor):
+    def accept(self, visitor: StmtVisitor):
         return visitor.visit_while_stmt(self)
 

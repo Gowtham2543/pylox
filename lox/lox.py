@@ -4,7 +4,6 @@ from lox.scanner import Scanner
 from lox.token import Token
 from lox.token_type import TokenType
 from lox.parser import Parser
-from lox.ast_printer import ASTPrinter
 from lox.interpreter import Interpreter
 from lox.resolver import Resolver
 

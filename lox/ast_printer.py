@@ -1,8 +1,7 @@
-from lox.Expr import exprVisitor, Expr, Binary, Grouping, Literal, Unary
-from lox.token import Token
-from lox.token_type import TokenType
+from lox.expr import ExprVisitor, Expr, Binary, Grouping, Literal, Unary
 
-class ASTPrinter(exprVisitor):
+
+class ASTPrinter(ExprVisitor):
     def print(self, expr: Expr):
         return expr.accept(self)
 

@@ -2,8 +2,8 @@ from typing import List
 
 from lox.token import Token
 from lox.token_type import TokenType
-from lox.Expr import Binary, Unary, Literal, Grouping, Variable, Assign, Logical, Call, Get, Set, This, Super
-from lox.Stmt import Print, Expression, Var, Block, If, While, Function, Return, Class
+from lox.expr import Binary, Unary, Literal, Grouping, Variable, Assign, Logical, Call, Get, Set, This, Super
+from lox.stmt import Print, Expression, Var, Block, If, While, Function, Return, Class
 
 
 class ParserException(Exception):
